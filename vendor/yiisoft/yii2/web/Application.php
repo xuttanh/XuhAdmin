@@ -26,7 +26,7 @@ use yii\helpers\Url;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
  */
-class Application extends \yii\base\Applicaction
+class Application extends \yii\base\Application
 {
     /**
      * @var string the default route of this application. Defaults to 'site'.
