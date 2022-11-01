@@ -1,7 +1,6 @@
 # Swoole IDE Helper
 
-[![Twitter](https://badgen.net/badge/icon/twitter?icon=twitter&label)](https://twitter.com/phpswoole)
-[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.swoole.dev)
+[![Build Status](https://travis-ci.org/swoole/ide-helper.svg?branch=master)](https://travis-ci.org/swoole/ide-helper)
 [![Latest Stable Version](https://poser.pugx.org/swoole/ide-helper/v/stable.svg)](https://packagist.org/packages/swoole/ide-helper)
 [![License](https://poser.pugx.org/swoole/ide-helper/license)](LICENSE)
 
@@ -9,36 +8,46 @@ This package contains IDE help files for [Swoole](https://github.com/swoole/swoo
 
 ## Install
 
-You can add this package to your project using [Composer](https://getcomposer.org):
-
-```bash
-composer require swoole/ide-helper:~5.0.0
-# or
-composer require --dev swoole/ide-helper:~5.0.0
-```
-
-To use the latest stubs from the `master` branch:
+You may add this package to your project using [Composer](https://getcomposer.org):
 
 ```bash
 composer require swoole/ide-helper:@dev
-# or
-composer require --dev swoole/ide-helper:@dev
+# or you may install a specific version, like:
+composer require swoole/ide-helper:~4.4.7
 ```
 
-## PHP Configuration Settings
+It's better to install this package on only development systems by adding the `--dev` flag to your Composer commands:
 
-* `swoole.display_errors`: Boolean. Default `On`. Display/hide error information from Swoole.
-* `swoole.enable_coroutine`: Boolean. Default `On`. Turn on/off coroutine support.
-* `swoole.enable_library`: Boolean. Default `On`. Load the source code from [Swoole Library](https://github.com/swoole/library) or not.
-* `swoole.enable_preemptive_scheduler`: Boolean. Default `Off`. Enable preemptive scheduler or not. To understand how it works, please check examples under section "CPU-intensive job scheduling" of repository [deminy/swoole-by-examples](https://github.com/deminy/swoole-by-examples).
-* `swoole.unixsock_buffer_size`: Integer (in bytes). By default, it's 256 KiB on Macintosh or FreeBSD, otherwise 8 MiB. The total buffer sizes for the socket connections between the master process and the worker processes in Swoole.
-* `swoole.use_shortname`: Boolean. Default `On`. Support short names or not. Short names are all the aliases listed in file [src/swoole/shortnames.php](src/swoole/shortnames.php).
+```bash
+composer require --dev swoole/ide-helper:@dev
+# or you may install a specific version, like:
+composer require --dev swoole/ide-helper:~4.4.7
+```
 
-All the directives can be set anywhere except `swoole.use_shortname`, which can only be set in `php.ini` files.
+## Alternatives
 
-## Notes
+The stubs are created by reverse-engineering the Swoole extensions directly; thus there is no documentation included,
+and type hinting is missing in many places. The Swoole team has tried its best to keep the stubs up to date, and we do
+want to add inline documentation and type hinting in the future; however, due to limited resources we don't know when it
+will be ready.
+ 
+Here are some alternatives you can consider:
 
-There are two types of worker processes in use when starting a Swoole server:
+* [eaglewu/swoole-ide-helper](https://github.com/wudi/swoole-ide-helper)
 
-1. `event worker`. All requests (HTTP, WebSocket, TCP, UDP, etc.) are handled by this type of processes. It supports coroutine by default; many I/O operations can run asynchronously in it.
-2. `task worker`. This type of processes was introduced to handle blocking I/O operations in PHP. Ideally, it should always work synchronously, although it also supports coroutine and allows asynchronous processing (since Swoole v4.2.12+).
+## Generate IDE Help Files
+
+Have Docker running first, then use script _./bin/generator.sh_ to generate IDE help files and put them under folder
+`output/` with commands like following:
+
+```bash
+./bin/generator.sh 4.4.16
+./bin/generator.sh 4.4.16   master
+./bin/generator.sh 4.4.16   4.4.16
+./bin/generator.sh 4.4.16   b5c9cede8c6150feba50d0e28d56de355fa69d16
+./bin/generator.sh 4.5.0RC1 7c913105c3273aab005489d78e0ff9043bfecb54
+#
+```
+
+The first parameter specifies a stable release of Swoole. The second parameter is optional; it is to specify which
+version of [Swoole library](https://github.com/swoole/library) to be integrated with (by default it will have the latest Swoole library included).

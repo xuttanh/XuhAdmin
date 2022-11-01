@@ -26,6 +26,10 @@ final class IntlLocalizedDecimalParser implements MoneyParser
      */
     private $currencies;
 
+    /**
+     * @param \NumberFormatter $formatter
+     * @param Currencies       $currencies
+     */
     public function __construct(\NumberFormatter $formatter, Currencies $currencies)
     {
         $this->formatter = $formatter;
@@ -42,13 +46,17 @@ final class IntlLocalizedDecimalParser implements MoneyParser
         }
 
         if (null === $forceCurrency) {
-            throw new ParserException('IntlLocalizedDecimalParser cannot parse currency symbols. Use forceCurrency argument');
+            throw new ParserException(
+                'IntlLocalizedDecimalParser cannot parse currency symbols. Use forceCurrency argument'
+            );
         }
 
         $decimal = $this->formatter->parse($money);
 
         if (false === $decimal) {
-            throw new ParserException('Cannot parse '.$money.' to Money. '.$this->formatter->getErrorMessage());
+            throw new ParserException(
+                'Cannot parse '.$money.' to Money. '.$this->formatter->getErrorMessage()
+            );
         }
 
         /*

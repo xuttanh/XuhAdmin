@@ -39,7 +39,7 @@ class LineFilter implements FilterInterface
      *
      * @param FeatureNode $feature Feature instance
      *
-     * @return bool
+     * @return Boolean
      */
     public function isFeatureMatch(FeatureNode $feature)
     {
@@ -51,7 +51,7 @@ class LineFilter implements FilterInterface
      *
      * @param ScenarioInterface $scenario Scenario or Outline node instance
      *
-     * @return bool
+     * @return Boolean
      */
     public function isScenarioMatch(ScenarioInterface $scenario)
     {
@@ -83,26 +83,24 @@ class LineFilter implements FilterInterface
             }
 
             if ($scenario instanceof OutlineNode && $scenario->hasExamples()) {
-                foreach ($scenario->getExampleTables() as $exampleTable) {
-                    $table = $exampleTable->getTable();
-                    $lines = array_keys($table);
+                $table = $scenario->getExampleTable()->getTable();
+                $lines = array_keys($table);
 
-                    if (in_array($this->filterLine, $lines)) {
-                        $filteredTable = array($lines[0] => $table[$lines[0]]);
+                if (in_array($this->filterLine, $lines)) {
+                    $filteredTable = array($lines[0] => $table[$lines[0]]);
 
-                        if ($lines[0] !== $this->filterLine) {
-                            $filteredTable[$this->filterLine] = $table[$this->filterLine];
-                        }
-
-                        $scenario = new OutlineNode(
-                            $scenario->getTitle(),
-                            $scenario->getTags(),
-                            $scenario->getSteps(),
-                            array(new ExampleTableNode($filteredTable, $exampleTable->getKeyword(), $exampleTable->getTags())),
-                            $scenario->getKeyword(),
-                            $scenario->getLine()
-                        );
+                    if ($lines[0] !== $this->filterLine) {
+                        $filteredTable[$this->filterLine] = $table[$this->filterLine];
                     }
+
+                    $scenario = new OutlineNode(
+                        $scenario->getTitle(),
+                        $scenario->getTags(),
+                        $scenario->getSteps(),
+                        new ExampleTableNode($filteredTable, $scenario->getExampleTable()->getKeyword()),
+                        $scenario->getKeyword(),
+                        $scenario->getLine()
+                    );
                 }
             }
 

@@ -25,11 +25,9 @@ class PushPayload {
     private $iosNotification;
     private $androidNotification;
     private $winPhoneNotification;
-    private $voip;
     private $smsMessage;
     private $message;
     private $options;
-    private $custom;
 
     /**
      * PushPayload constructor.
@@ -287,10 +285,6 @@ class PushPayload {
             }
         }
 
-        if (!is_null($this->voip)) {
-            $notification['voip'] = $this->voip;
-        }
-
         if (count($notification) > 0) {
             $payload['notification'] = $notification;
         }
@@ -311,12 +305,6 @@ class PushPayload {
         }
 
         $payload['options'] = $this->options;
-
-        if (!is_null($this->custom)) {
-            foreach($this->custom as $key=>$val) {
-                $payload[$key] = $val;
-            }
-        }
 
         return $payload;
     }
@@ -448,22 +436,6 @@ class PushPayload {
         return $this;
     }
 
-    /**
-     * Voip in notification
-     * could add any custom key/value into it
-     */
-    public function voip (array $extras = array()) {
-        $voip = array();
-        if(!empty($extras)) {
-            foreach($extras as $key=>$val) {
-                $voip[$key] = $val;
-            }
-        }
-        $voip = array_merge($extras, $voip);
-        $this->voip=$voip;        
-        return $this;
-    }
-
     public function message($msg_content, array $msg = array()) {
         # $required_keys = array('title', 'content_type', 'extras');
         if (is_string($msg_content)) {
@@ -513,13 +485,6 @@ class PushPayload {
         $options = array_merge($opts, $options);
         $this->options = $options;
 
-        return $this;
-    }
-
-    public function custom (array $extras = array()) {
-        if(!empty($extras)) {
-            $this->custom=$extras;        
-        }
         return $this;
     }
 

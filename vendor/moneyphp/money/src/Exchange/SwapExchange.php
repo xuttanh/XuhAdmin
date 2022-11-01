@@ -21,6 +21,9 @@ final class SwapExchange implements Exchange
      */
     private $swap;
 
+    /**
+     * @param Swap $swap
+     */
     public function __construct(Swap $swap)
     {
         $this->swap = $swap;

@@ -1,0 +1,69 @@
+#开发环境
+1、微信开发调试会有缓存问题导致无法使用获取用户信息。原因默认的C:\Windows目录无写入权限。调整php.ini中的sys_temp_dir路径即可。
+wechat SDK 遵循了官方建议，所以在调用这些接口时，除了按照官方文档设置操作证书文件外，还需要保证服务器正确安装了 CA 证书。
+2、下载 CA 证书
+你可以从 http://curl.haxx.se/ca/cacert.pem 下载 或者 使用微信官方提供的证书中的 CA 证书 rootca.pem 也是同样的效果。在 php.ini 中配置 CA 证书
+3、只需要将上面下载好的 CA 证书放置到您的服务器上某个位置，然后修改 php.ini 的 curl.cainfo 为该路径（绝对路径！），重启 php-fpm 服务即可。
+curl.cainfo = /path/to/downloaded/cacert.pem
+注意证书文件路径为绝对路径！以自己实际情况为准。
+
+#配置数据库信息 
+1、找到 common/config/main-local.php 并配置相应的信息, 注意要先创建好数据库
+2、安装数据库(Mysql5.7及以上)
+php ./yii migrate/up
+3、初始化账号密码，一键创建总管理员账号密码(注意保存)
+php ./yii password/init
+4、Linux 环境下如果是文件缓存去 backend/runtime 目录执行一下 chmod -R 777 cache，不执行可能会造成修改了网站设置缓存不生效的情况
+
+#应用url
+后台	当前域名/backend
+商户	当前域名/merchant
+商户接口	当前域名/merapi
+Html5	当前域名/html5
+Api	当前域名/api
+OAuth2	当前域名/oauth2
+
+#伪静态
+1、Nginx
+location / {
+    try_files $uri $uri/ /index.php$is_args$args;
+}
+location /backend {
+    try_files $uri $uri/ /backend/index.php$is_args$args;
+}
+location /api {
+    try_files $uri $uri/ /api/index.php$is_args$args;
+}
+location /merchant {
+    try_files $uri $uri/ /merchant/index.php$is_args$args;
+}
+location /merapi {
+    try_files $uri $uri/ /merapi/index.php$is_args$args;
+}
+location /html5 {
+    try_files $uri $uri/ /html5/index.php$is_args$args;
+}
+location /oauth2 {
+    try_files $uri $uri/ /oauth2/index.php$is_args$args;
+}
+
+location ~* ^/attachment/.*\.(php|php5)$ 
+{
+    deny all;
+}
+2、Apache
+Options +FollowSymLinks
+IndexIgnore */*
+RewriteEngine on
+
+# if a directory or a file exists, use it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# otherwise forward it to index.php
+RewriteRule . index.php
+
+
+#常见问题
+https://github.com/jianyan74/rageframe2/blob/master/docs/guide-zh-CN/start-issue.md
+

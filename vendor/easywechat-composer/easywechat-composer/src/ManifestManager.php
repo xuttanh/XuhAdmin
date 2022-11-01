@@ -86,9 +86,7 @@ class ManifestManager
         $manifest = [];
 
         $packages = array_filter($packages, function ($package) {
-            if(isset($package['type'])){
-                return $package['type'] === self::PACKAGE_TYPE;
-            }
+            return $package['type'] === self::PACKAGE_TYPE;
         });
 
         foreach ($packages as $package) {

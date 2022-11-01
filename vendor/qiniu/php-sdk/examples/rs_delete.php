@@ -19,9 +19,7 @@ $bucketManager = new BucketManager($auth, $config);
 
 $key = "qiniu.mp4_copy";
 
-list($ret, $err) = $bucketManager->delete($bucket, $key);
-if ($err != null) {
-    var_dump($err);
-} else {
-    var_dump($ret);
+$err = $bucketManager->delete($bucket, $key);
+if ($err) {
+    print_r($err);
 }

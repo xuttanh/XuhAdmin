@@ -25,17 +25,12 @@ $keys = array(
 
 $keyTypePairs = array();
 
-// key 是文件
-// value 是存储类型（fileType）
-// 0 表示普通存储
-// 1 表示低频存储
-// 2 表示归档存储
-// 3 表示深度归档存储
+// type=0表示普通存储，type=1表示低频存储
 foreach ($keys as $key) {
     $keyTypePairs[$key] = 1;
 }
 
-$ops = BucketManager::buildBatchChangeType($bucket, $keyTypePairs);
+$ops = $bucketManager->buildBatchChangeType($bucket, $keyTypePairs);
 list($ret, $err) = $bucketManager->batch($ops);
 if ($err != null) {
     var_dump($err);

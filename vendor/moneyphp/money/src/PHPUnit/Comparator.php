@@ -47,6 +47,7 @@ final class Comparator extends \SebastianBergmann\Comparator\Comparator
      * @param float $delta
      * @param bool  $canonicalize
      * @param bool  $ignoreCase
+     * @param array $processed
      */
     public function assertEquals(
         $expected,
@@ -57,7 +58,14 @@ final class Comparator extends \SebastianBergmann\Comparator\Comparator
         array &$processed = []
     ) {
         if (!$expected->equals($actual)) {
-            throw new ComparisonFailure($expected, $actual, $this->formatter->format($expected), $this->formatter->format($actual), false, 'Failed asserting that two Money objects are equal.');
+            throw new ComparisonFailure(
+                $expected,
+                $actual,
+                $this->formatter->format($expected),
+                $this->formatter->format($actual),
+                false,
+                'Failed asserting that two Money objects are equal.'
+            );
         }
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Curl;
 
-use Curl\CaseInsensitiveArray;
-
 class ArrayUtil
 {
     /**
@@ -16,10 +14,7 @@ class ArrayUtil
      */
     public static function isArrayAssoc($array)
     {
-        return (
-            $array instanceof CaseInsensitiveArray ||
-            (bool)count(array_filter(array_keys($array), 'is_string'))
-        );
+        return (bool)count(array_filter(array_keys($array), 'is_string'));
     }
 
     /**
@@ -33,7 +28,7 @@ class ArrayUtil
      */
     public static function is_array_assoc($array)
     {
-        return static::isArrayAssoc($array);
+        return $this->isArrayAssoc($array);
     }
 
     /**
@@ -64,7 +59,7 @@ class ArrayUtil
      */
     public static function is_array_multidim($array)
     {
-        return static::isArrayMultidim($array);
+        return $this->isArrayMultidim($array);
     }
 
     /**
@@ -123,7 +118,7 @@ class ArrayUtil
      */
     public static function array_flatten_multidim($array, $prefix = false)
     {
-        return static::arrayFlattenMultidim($array, $prefix);
+        return $this->arrayFlattenMultidim($array, $prefix);
     }
 
     /**
@@ -150,6 +145,6 @@ class ArrayUtil
      */
     public static function array_random($array)
     {
-        return static::arrayRandom($array);
+        return $this->arrayRandom($array);
     }
 }

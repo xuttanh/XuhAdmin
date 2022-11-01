@@ -13,7 +13,6 @@ namespace Symfony\Component\Cache\Traits;
 
 use Psr\Cache\CacheItemInterface;
 use Symfony\Component\Cache\CacheItem;
-use Symfony\Component\Cache\Exception\InvalidArgumentException;
 
 /**
  * @author Nicolas Grekas <p@tchwork.com>
@@ -39,11 +38,10 @@ trait AbstractAdapterTrait
      */
     public function getItem($key)
     {
-        $id = $this->getId($key);
-
-        if (isset($this->deferred[$key])) {
+        if ($this->deferred) {
             $this->commit();
         }
+        $id = $this->getId($key);
 
         $f = $this->createCacheItem;
         $isHit = false;
@@ -67,18 +65,14 @@ trait AbstractAdapterTrait
      */
     public function getItems(array $keys = [])
     {
+        if ($this->deferred) {
+            $this->commit();
+        }
         $ids = [];
-        $commit = false;
 
         foreach ($keys as $key) {
             $ids[] = $this->getId($key);
-            $commit = $commit || isset($this->deferred[$key]);
         }
-
-        if ($commit) {
-            $this->commit();
-        }
-
         try {
             $items = $this->doFetch($ids);
         } catch (\Exception $e) {
@@ -120,9 +114,6 @@ trait AbstractAdapterTrait
         return true;
     }
 
-    /**
-     * @return array
-     */
     public function __sleep()
     {
         throw new \BadMethodCallException('Cannot serialize '.__CLASS__);

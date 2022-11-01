@@ -3,9 +3,6 @@ namespace OSS;
 
 use OSS\Core\MimeTypes;
 use OSS\Core\OssException;
-use OSS\Credentials\Credentials;
-use OSS\Credentials\CredentialsProvider;
-use OSS\Credentials\StaticCredentialsProvider;
 use OSS\Http\RequestCore;
 use OSS\Http\RequestCore_Exception;
 use OSS\Http\ResponseCore;
@@ -15,7 +12,6 @@ use OSS\Model\LoggingConfig;
 use OSS\Model\LiveChannelConfig;
 use OSS\Model\LiveChannelInfo;
 use OSS\Model\LiveChannelListInfo;
-use OSS\Model\ObjectListInfoV2;
 use OSS\Model\StorageCapacityConfig;
 use OSS\Result\AclResult;
 use OSS\Result\BodyResult;
@@ -33,7 +29,6 @@ use OSS\Result\ListBucketsResult;
 use OSS\Result\ListMultipartUploadResult;
 use OSS\Model\ListMultipartUploadInfo;
 use OSS\Result\ListObjectsResult;
-use OSS\Result\ListObjectsV2Result;
 use OSS\Result\ListPartsResult;
 use OSS\Result\PutSetDeleteResult;
 use OSS\Result\DeleteObjectsResult;
@@ -77,11 +72,6 @@ use OSS\Result\ListObjectVersionsResult;
 use OSS\Model\DeleteObjectInfo;
 use OSS\Model\DeletedObjectInfo;
 use OSS\Result\DeleteObjectVersionsResult;
-use OSS\Model\TransferAccelerationConfig;
-use OSS\Result\GetBucketTransferAccelerationResult;
-use OSS\Model\CnameTokenInfo;
-use OSS\Result\CreateBucketCnameTokenResult;
-use OSS\Result\GetBucketCnameTokenResult;
 
 /**
  * Class OssClient
@@ -92,25 +82,12 @@ use OSS\Result\GetBucketCnameTokenResult;
  */
 class OssClient
 {
-
     /**
-     * OssClient constructor.
-     */
-    public function __construct()
-    {
-        $argNum = func_num_args();
-        $args = func_get_args();
-        if($argNum == 1 && is_array($args[0])){
-            call_user_func_array(array($this,'__initNewClient'),$args);
-        }else{
-            call_user_func_array(array($this,'__initClient'),$args);
-        }
-    }
-
-    /**
+     * Constructor
+     *
      * There're a few different ways to create an OssClient object:
      * 1. Most common one from access Id, access Key and the endpoint: $ossClient = new OssClient($id, $key, $endpoint)
-     * 2. If the endpoint is the CName (such as www.testoss.com, make sure it's CName binded in the OSS console),
+     * 2. If the endpoint is the CName (such as www.testoss.com, make sure it's CName binded in the OSS console), 
      *    uses $ossClient = new OssClient($id, $key, $endpoint, true)
      * 3. If using Alicloud's security token service (STS), then the AccessKeyId, AccessKeySecret and STS token are all got from STS.
      * Use this: $ossClient = new OssClient($id, $key, $endpoint, false, $token)
@@ -124,7 +101,7 @@ class OssClient
      * @param string $requestProxy
      * @throws OssException
      */
-    private function __initClient($accessKeyId, $accessKeySecret, $endpoint, $isCName = false, $securityToken = NULL, $requestProxy = NULL)
+    public function __construct($accessKeyId, $accessKeySecret, $endpoint, $isCName = false, $securityToken = NULL, $requestProxy = NULL)
     {
         $accessKeyId = trim($accessKeyId);
         $accessKeySecret = trim($accessKeySecret);
@@ -136,36 +113,17 @@ class OssClient
         if (empty($accessKeySecret)) {
             throw new OssException("access key secret is empty");
         }
-        $provider = new StaticCredentialsProvider($accessKeyId,$accessKeySecret,$securityToken);
-        $config = array(
-            'endpoint'              => $endpoint,
-            'cname'                 => $isCName,
-            'request_proxy'         => $requestProxy,
-            'provider'              => $provider
-        );
-        $this->__initNewClient($config);
-    }
-
-    /**
-     * @param array $config
-     * @throws OssException
-     */
-    private function __initNewClient($config=array()){
-        $isCName = isset($config['cname']) ? $config['cname']: false;
-        $endpoint = isset($config['endpoint']) ? $config['endpoint'] : '';
-        $requestProxy = isset($config['request_proxy']) ? $config['request_proxy']: null;
-        $provider = isset($config['provider']) ? $config['provider'] : '';
         if (empty($endpoint)) {
             throw new OssException("endpoint is empty");
         }
         $this->hostname = $this->checkEndpoint($endpoint, $isCName);
+        $this->accessKeyId = $accessKeyId;
+        $this->accessKeySecret = $accessKeySecret;
+        $this->securityToken = $securityToken;
         $this->requestProxy = $requestProxy;
-        if(!$provider instanceof CredentialsProvider){
-            throw new OssException("provider must be an instance of CredentialsProvider");
-        }
-        $this->provider = $provider;
         self::checkEnv();
     }
+
     /**
      * Lists the Bucket [GetService]. Not applicable if the endpoint is CName (because CName must be binded to a specific bucket).
      *
@@ -584,12 +542,12 @@ class OssClient
         $options[self::OSS_BUCKET] = $bucket;
         $options[self::OSS_METHOD] = self::OSS_HTTP_POST;
         $options[self::OSS_OBJECT] = '/';
+        $options[self::OSS_SUB_RESOURCE] = 'cname';
         $options[self::OSS_CONTENT_TYPE] = 'application/xml';
         $cnameConfig = new CnameConfig();
         $cnameConfig->addCname($cname);
         $options[self::OSS_CONTENT] = $cnameConfig->serializeToXml();
         $options[self::OSS_COMP] = 'add';
-        $options[self::OSS_CNAME] = '';
 
         $response = $this->auth($options);
         $result = new PutSetDeleteResult($response);
@@ -610,7 +568,7 @@ class OssClient
         $options[self::OSS_BUCKET] = $bucket;
         $options[self::OSS_METHOD] = self::OSS_HTTP_GET;
         $options[self::OSS_OBJECT] = '/';
-        $options[self::OSS_CNAME] = '';
+        $options[self::OSS_SUB_RESOURCE] = 'cname';
         $response = $this->auth($options);
         $result = new GetCnameResult($response);
         return $result->getData();
@@ -631,61 +589,15 @@ class OssClient
         $options[self::OSS_BUCKET] = $bucket;
         $options[self::OSS_METHOD] = self::OSS_HTTP_POST;
         $options[self::OSS_OBJECT] = '/';
+        $options[self::OSS_SUB_RESOURCE] = 'cname';
         $options[self::OSS_CONTENT_TYPE] = 'application/xml';
         $cnameConfig = new CnameConfig();
         $cnameConfig->addCname($cname);
         $options[self::OSS_CONTENT] = $cnameConfig->serializeToXml();
         $options[self::OSS_COMP] = 'delete';
-        $options[self::OSS_CNAME] = '';
 
         $response = $this->auth($options);
         $result = new PutSetDeleteResult($response);
-        return $result->getData();
-    }
-
-    /**
-     * create a cname token for a bucket
-     *
-     * @param string $bucket bucket name
-     * @param array $options
-     * @throws OssException
-     * @return CnameToken
-     */
-    public function createBucketCnameToken($bucket, $cname, $options = NULL)
-    {
-        $this->precheckCommon($bucket, NULL, $options, false);
-        $options[self::OSS_BUCKET] = $bucket;
-        $options[self::OSS_METHOD] = self::OSS_HTTP_POST;
-        $options[self::OSS_OBJECT] = '/';
-        $options[self::OSS_CONTENT_TYPE] = 'application/xml';
-        $cnameConfig = new CnameConfig();
-        $cnameConfig->addCname($cname);
-        $options[self::OSS_CONTENT] = $cnameConfig->serializeToXml();
-        $options[self::OSS_COMP] = 'token';
-        $options[self::OSS_CNAME] = '';
-        $response = $this->auth($options);
-        $result = new CreateBucketCnameTokenResult($response);
-        return $result->getData();
-    }
-
-    /**
-     * get a cname token for a bucket
-     *
-     * @param string $bucket bucket name
-     * @param array $options
-     * @throws OssException
-     * @return CnameToken
-     */
-    public function getBucketCnameToken($bucket, $cname, $options = NULL)
-    {
-        $this->precheckCommon($bucket, NULL, $options, false);
-        $options[self::OSS_BUCKET] = $bucket;
-        $options[self::OSS_METHOD] = self::OSS_HTTP_GET;
-        $options[self::OSS_OBJECT] = '/';
-        $options[self::OSS_COMP] = 'token';
-        $options[self::OSS_CNAME] = $cname;
-        $response = $this->auth($options);
-        $result = new GetBucketCnameTokenResult($response);
         return $result->getData();
     }
 
@@ -912,12 +824,9 @@ class OssClient
         $resource = '/' . $bucket . '/' . $channelName;
 
         $string_to_sign = $expires . "\n" . $cano_params . $resource;
-        $cred = $this->provider->getCredentials();
-        $this->checkCredentials($cred);
+        $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $this->accessKeySecret, true));
 
-        $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $cred->getAccessKeySecret(), true));
-
-        $query_items[] = 'OSSAccessKeyId=' . rawurlencode($cred->getAccessKeyId());
+        $query_items[] = 'OSSAccessKeyId=' . rawurlencode($this->accessKeyId);
         $query_items[] = 'Expires=' . rawurlencode($expires);
         $query_items[] = 'Signature=' . rawurlencode($signature);
 
@@ -950,12 +859,9 @@ class OssClient
         $resource = '/' . $bucket . '/' . $channelName;
 
         $string_to_sign = $expiration . "\n" . $cano_params . $resource;
-        $cred = $this->provider->getCredentials();
-        $this->checkCredentials($cred);
+        $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $this->accessKeySecret, true));
 
-        $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $cred->getAccessKeySecret(), true));
-
-        $query_items[] = 'OSSAccessKeyId=' . rawurlencode($cred->getAccessKeyId());
+        $query_items[] = 'OSSAccessKeyId=' . rawurlencode($this->accessKeyId);
         $query_items[] = 'Expires=' . rawurlencode($expiration);
         $query_items[] = 'Signature=' . rawurlencode($signature);
 
@@ -1587,52 +1493,6 @@ class OssClient
         return $result->getData();
     }
 
-
-    /**
-     * Put Bucket TransferAcceleration
-     * @param $bucket
-     * @param $enabled boolean
-     * @param null $options
-     * @return null
-     * @throws OssException
-     */
-
-    public function putBucketTransferAcceleration($bucket,$enabled,$options = NULL)
-    {
-        $this->precheckCommon($bucket, NULL, $options, false);
-        $options[self::OSS_BUCKET] = $bucket;
-        $options[self::OSS_METHOD] = self::OSS_HTTP_PUT;
-        $options[self::OSS_OBJECT] = '/';
-        $options[self::OSS_SUB_RESOURCE] = 'transferAcceleration';
-        $options[self::OSS_CONTENT_TYPE] = 'application/xml';
-        $config = new TransferAccelerationConfig();
-        $config->setEnabled($enabled);
-        $options[self::OSS_CONTENT] = $config->serializeToXml();
-        $response = $this->auth($options);
-        $result = new HeaderResult($response);
-        return $result->getData();
-    }
-
-    /**
-     * Put Bucket TransferAcceleration
-     * @param $bucket
-     * @param null $options
-     * @return enabled boolean
-     * @throws OssException
-     */
-    public function getBucketTransferAcceleration($bucket,$options = NULL)
-    {
-        $this->precheckCommon($bucket, NULL, $options, false);
-        $options[self::OSS_BUCKET] = $bucket;
-        $options[self::OSS_METHOD] = self::OSS_HTTP_GET;
-        $options[self::OSS_OBJECT] = '/';
-        $options[self::OSS_SUB_RESOURCE] = 'transferAcceleration';
-        $options[self::OSS_CONTENT_TYPE] = 'application/xml';
-        $response = $this->auth($options);
-        $result = new GetBucketTransferAccelerationResult($response);
-        return $result->getData();
-    }
-
     /**
      * Lists the bucket's object list (in ObjectListInfo)
      *
@@ -1668,52 +1528,6 @@ class OssClient
         $result = new ListObjectsResult($response);
         return $result->getData();
     }
-    
-    
-    /**
-     * Lists the bucket's object list v2 (in ObjectListInfoV2)
-     *
-     * @param string $bucket
-     * @param array $options are defined below:
-     * $options = array(
-     *      'max-keys'    => specifies max object count to return. By default is 100 and max value could be 1000.
-     *      'prefix'      => specifies the key prefix the returned objects must have. Note that the returned keys still contain the prefix.
-     *      'delimiter'   => The delimiter of object name for grouping object. When it's specified, listObjects will differeniate the object and folder. And it will return subfolder's objects.
-     *      'start-after' => The key of returned object must be greater than the 'start-after'.
-     *      'continuation-token' => The token from which the list operation must start.
-     *)
-     * Prefix, start-after and continuation-token are for filtering and paging. Their length must be less than 256 bytes
-     * @throws OssException
-     * @return ObjectListInfoV2
-     */
-    public function listObjectsV2($bucket, $options = NULL)
-    {
-        $this->precheckCommon($bucket, NULL, $options, false);
-        $options[self::OSS_BUCKET] = $bucket;
-        $options[self::OSS_METHOD] = self::OSS_HTTP_GET;
-        $options[self::OSS_OBJECT] = '/';
-        $query = isset($options[self::OSS_QUERY_STRING]) ? $options[self::OSS_QUERY_STRING] : array();
-        $temp = array(
-            self::OSS_LIST_TYPE=>2,
-            self::OSS_ENCODING_TYPE => self::OSS_ENCODING_TYPE_URL,
-            self::OSS_DELIMITER => isset($options[self::OSS_DELIMITER]) ? $options[self::OSS_DELIMITER] : '/',
-            self::OSS_PREFIX => isset($options[self::OSS_PREFIX]) ? $options[self::OSS_PREFIX] : '',
-            self::OSS_MAX_KEYS => isset($options[self::OSS_MAX_KEYS]) ? $options[self::OSS_MAX_KEYS] : self::OSS_MAX_KEYS_VALUE,
-            self::OSS_START_AFTER => isset($options[self::OSS_START_AFTER]) ? $options[self::OSS_START_AFTER] : '',
-        );
-        if(isset($options[self::OSS_CONTINUATION_TOKEN])){
-            $temp[self::OSS_CONTINUATION_TOKEN] = $options[self::OSS_CONTINUATION_TOKEN];
-        }
-        $options[self::OSS_QUERY_STRING] = array_merge(
-            $query,$temp
-        );
-        $response = $this->auth($options);
-        $result = new ListObjectsV2Result($response);
-        return $result->getData();
-    }
-    
-    
-    
 
     /**
      * Lists the bucket's object with version information (in ObjectListInfo)
@@ -1802,8 +1616,8 @@ class OssClient
 
         $is_check_md5 = $this->isCheckMD5($options);
         if ($is_check_md5) {
-            $content_md5 = base64_encode(md5($content, true));
-            $options[self::OSS_CONTENT_MD5] = $content_md5;
+        	$content_md5 = base64_encode(md5($content, true));
+        	$options[self::OSS_CONTENT_MD5] = $content_md5;
         }
         
         if (!isset($options[self::OSS_CONTENT_TYPE])) {
@@ -1884,7 +1698,7 @@ class OssClient
             throw new OssException($file . " file does not exist");
         }
         $options[self::OSS_FILE_UPLOAD] = $file;
-        $file_size = sprintf('%u',filesize($options[self::OSS_FILE_UPLOAD]));
+        $file_size = filesize($options[self::OSS_FILE_UPLOAD]);
         $is_check_md5 = $this->isCheckMD5($options);
         if ($is_check_md5) {
             $content_md5 = base64_encode(md5_file($options[self::OSS_FILE_UPLOAD], true));
@@ -1970,8 +1784,8 @@ class OssClient
         
         $is_check_md5 = $this->isCheckMD5($options);
         if ($is_check_md5) {
-            $content_md5 = base64_encode(md5($content, true));
-            $options[self::OSS_CONTENT_MD5] = $content_md5;
+        	$content_md5 = base64_encode(md5($content, true));
+        	$options[self::OSS_CONTENT_MD5] = $content_md5;
         }
 
         if (!isset($options[self::OSS_CONTENT_TYPE])) {
@@ -2002,7 +1816,7 @@ class OssClient
             throw new OssException($file . " file does not exist");
         }
         $options[self::OSS_FILE_UPLOAD] = $file;
-        $file_size =  sprintf('%u',filesize($options[self::OSS_FILE_UPLOAD]));
+        $file_size = filesize($options[self::OSS_FILE_UPLOAD]);
         $is_check_md5 = $this->isCheckMD5($options);
         if ($is_check_md5) {
             $content_md5 = base64_encode(md5_file($options[self::OSS_FILE_UPLOAD], true));
@@ -2520,12 +2334,10 @@ class OssClient
         $options[self::OSS_OBJECT] = $object;
         $options[self::OSS_UPLOAD_ID] = $uploadId;
         $options[self::OSS_CONTENT_TYPE] = 'application/xml';
-        if (is_array($listParts)) {
-            $options[self::OSS_CONTENT] = OssUtil::createCompleteMultipartUploadXmlBody($listParts);
-        }  else {
-            $options[self::OSS_CONTENT] = "";
+        if (!is_array($listParts)) {
+            throw new OssException("listParts must be array type");
         }
-
+        $options[self::OSS_CONTENT] = OssUtil::createCompleteMultipartUploadXmlBody($listParts);
         $response = $this->auth($options);
         if (isset($options[self::OSS_CALLBACK]) && !empty($options[self::OSS_CALLBACK])) {
             $result = new CallbackResult($response);
@@ -2648,8 +2460,7 @@ class OssClient
         if (isset($options[self::OSS_CONTENT_LENGTH])) {
             $upload_file_size = (integer)$options[self::OSS_CONTENT_LENGTH];
         } else {
-            $upload_file_size = sprintf('%u',filesize($uploadFile));
-
+            $upload_file_size = filesize($uploadFile);
             if ($upload_file_size !== false) {
                 $upload_file_size -= $upload_position;  
             }
@@ -3008,16 +2819,13 @@ class OssClient
         $this->authPrecheckObjectEncoding($options);
         //Validates ACL
         $this->authPrecheckAcl($options);
-        $cred = $this->provider->getCredentials();
-        $this->checkCredentials($cred);
-
         // Should https or http be used?
         $scheme = $this->useSSL ? 'https://' : 'http://';
         // gets the host name. If the host name is public domain or private domain, form a third level domain by prefixing the bucket name on the domain name.
         $hostname = $this->generateHostname($options[self::OSS_BUCKET]);
         $string_to_sign = '';
-        $headers = $this->generateHeaders($options, $hostname,$cred);
-        $signable_query_string_params = $this->generateSignableQueryStringParam($options,$cred);
+        $headers = $this->generateHeaders($options, $hostname);
+        $signable_query_string_params = $this->generateSignableQueryStringParam($options);
         $signable_query_string = OssUtil::toQueryString($signable_query_string_params);
         $resource_uri = $this->generateResourceUri($options);
         //Generates the URL (add query parameters)
@@ -3035,10 +2843,10 @@ class OssClient
             $non_signable_resource .= $conjunction . $query_string;
             $conjunction = '&';
         }
-        $requestUrl = $scheme . $hostname . $resource_uri . $signable_query_string . $non_signable_resource;
+        $this->requestUrl = $scheme . $hostname . $resource_uri . $signable_query_string . $non_signable_resource;
 
         //Creates the request
-        $request = new RequestCore($requestUrl, $this->requestProxy);
+        $request = new RequestCore($this->requestUrl, $this->requestProxy);
         $request->set_useragent($this->generateUserAgent());
         // Streaming uploads
         if (isset($options[self::OSS_FILE_UPLOAD])) {
@@ -3130,14 +2938,15 @@ class OssClient
         // Sort the strings to be signed.
         $string_to_sign_ordered .= $this->stringToSignSorted($signable_resource);
 
-        $signature = base64_encode(hash_hmac('sha1', $string_to_sign_ordered,$cred->getAccessKeySecret(), true));
-        $request->add_header('Authorization', 'OSS ' . $cred->getAccessKeyId() . ':' . $signature);
+
+        $signature = base64_encode(hash_hmac('sha1', $string_to_sign_ordered, $this->accessKeySecret, true));
+        $request->add_header('Authorization', 'OSS ' . $this->accessKeyId . ':' . $signature);
 
         if (isset($options[self::OSS_PREAUTH]) && (integer)$options[self::OSS_PREAUTH] > 0) {
-            $signed_url = $requestUrl . $conjunction . self::OSS_URL_ACCESS_KEY_ID . '=' . rawurlencode($cred->getAccessKeyId()) . '&' . self::OSS_URL_EXPIRES . '=' . $options[self::OSS_PREAUTH] . '&' . self::OSS_URL_SIGNATURE . '=' . rawurlencode($signature);
+            $signed_url = $this->requestUrl . $conjunction . self::OSS_URL_ACCESS_KEY_ID . '=' . rawurlencode($this->accessKeyId) . '&' . self::OSS_URL_EXPIRES . '=' . $options[self::OSS_PREAUTH] . '&' . self::OSS_URL_SIGNATURE . '=' . rawurlencode($signature);
             return $signed_url;
         } elseif (isset($options[self::OSS_PREAUTH])) {
-            return $requestUrl;
+            return $this->requestUrl;
         }
 
         if ($this->timeout !== 0) {
@@ -3153,7 +2962,7 @@ class OssClient
             throw(new OssException('RequestCoreException: ' . $e->getMessage()));
         }
         $response_header = $request->get_response_header();
-        $response_header['oss-request-url'] = $requestUrl;
+        $response_header['oss-request-url'] = $this->requestUrl;
         $response_header['oss-redirects'] = $this->redirects;
         $response_header['oss-stringtosign'] = $string_to_sign;
         $response_header['oss-requestheaders'] = $request->request_headers;
@@ -3344,10 +3153,9 @@ class OssClient
      * Generates the signalbe query string parameters in array type
      *
      * @param array $options
-     * @param Credentials $cred
      * @return array
      */
-    private function generateSignableQueryStringParam($options,$cred)
+    private function generateSignableQueryStringParam($options)
     {
         $signableQueryStringParams = array();
         $signableList = array(
@@ -3371,8 +3179,6 @@ class OssClient
             self::OSS_WORM_ID,
             self::OSS_TRAFFIC_LIMIT,
             self::OSS_VERSION_ID,
-            self::OSS_CONTINUATION_TOKEN,
-            self::OSS_CNAME,
         );
 
         foreach ($signableList as $item) {
@@ -3381,8 +3187,8 @@ class OssClient
             }
         }
 
-        if ($this->enableStsInUrl && (!empty($cred->getSecurityToken()))) {
-            $signableQueryStringParams["security-token"] = $cred->getSecurityToken();
+        if ($this->enableStsInUrl && (!is_null($this->securityToken))) {
+            $signableQueryStringParams["security-token"] = $this->securityToken;
         }
 
         return $signableQueryStringParams;
@@ -3451,12 +3257,7 @@ class OssClient
 
         $queryStringSorted = substr($queryStringSorted, 0, -1);
 
-        $result = '';
-        for ($i = 0; $i < $index -1; $i++)
-        {
-            $result .= $explodeResult[$i] . '?';
-        }
-        return $result . $queryStringSorted;
+        return $explodeResult[0] . '?' . $queryStringSorted;
     }
 
     /**
@@ -3464,10 +3265,9 @@ class OssClient
      *
      * @param mixed $options
      * @param string $hostname hostname
-     * @param Credentials $cred
      * @return array
      */
-    private function generateHeaders($options, $hostname,$cred)
+    private function generateHeaders($options, $hostname)
     {
         $headers = array(
             self::OSS_CONTENT_MD5 => '',
@@ -3480,8 +3280,8 @@ class OssClient
         }
 
         //Add stsSecurityToken
-        if ((!empty($cred->getSecurityToken())) && (!$this->enableStsInUrl)) {
-            $headers[self::OSS_SECURITY_TOKEN] = $cred->getSecurityToken();
+        if ((!is_null($this->securityToken)) && (!$this->enableStsInUrl)) {
+            $headers[self::OSS_SECURITY_TOKEN] = $this->securityToken;
         }
         //Merge HTTP headers
         if (isset($options[self::OSS_HEADERS])) {
@@ -3530,23 +3330,6 @@ class OssClient
             $this->hostType = self::OSS_HOST_TYPE_NORMAL;
         }
         return $ret_endpoint;
-    }
-
-    /**
-     * @param Credentials $credential
-     * @return OssException
-     */
-    private function checkCredentials($credential)
-    {
-        if (empty($credential)) {
-            throw new OssException("credentials is empty.");
-        }
-        if (empty($credential->getAccessKeyId())) {
-            throw new OssException("access key id is empty");
-        }
-        if (empty($credential->getAccessKeySecret())) {
-            throw new OssException("access key secret is empty");
-        }
     }
 
     /**
@@ -3622,9 +3405,6 @@ class OssClient
     const OSS_PREFIX = 'prefix';
     const OSS_DELIMITER = 'delimiter';
     const OSS_MARKER = 'marker';
-    const OSS_FETCH_OWNER = 'fetch-owner';
-    const OSS_START_AFTER = 'start-after';
-    const OSS_CONTINUATION_TOKEN = 'continuation-token';
     const OSS_ACCEPT_ENCODING = 'Accept-Encoding';
     const OSS_CONTENT_MD5 = 'Content-Md5';
     const OSS_SELF_CONTENT_MD5 = 'x-oss-meta-md5';
@@ -3677,7 +3457,6 @@ class OssClient
     const OSS_VERSION_ID_MARKER = 'version-id-marker';
     const OSS_VERSION_ID = 'versionId';
     const OSS_HEADER_VERSION_ID = 'x-oss-version-id';
-    const OSS_CNAME = 'cname';
 
     //private URLs
     const OSS_URL_ACCESS_KEY_ID = 'OSSAccessKeyId';
@@ -3710,8 +3489,6 @@ class OssClient
     const OSS_ACL_TYPE_PUBLIC_READ_WRITE = 'public-read-write';
     const OSS_ENCODING_TYPE = "encoding-type";
     const OSS_ENCODING_TYPE_URL = "url";
-    
-    const OSS_LIST_TYPE = "list-type";
 
     // Domain Types
     const OSS_HOST_TYPE_NORMAL = "normal";//http://bucket.oss-cn-hangzhou.aliyuncs.com/object
@@ -3726,8 +3503,8 @@ class OssClient
     );
     // OssClient version information
     const OSS_NAME = "aliyun-sdk-php";
-    const OSS_VERSION = "2.6.0";
-    const OSS_BUILD = "20220803";
+    const OSS_VERSION = "2.4.1";
+    const OSS_BUILD = "20200929";
     const OSS_AUTHOR = "";
     const OSS_OPTIONS_ORIGIN = 'Origin';
     const OSS_OPTIONS_REQUEST_METHOD = 'Access-Control-Request-Method';
@@ -3740,12 +3517,12 @@ class OssClient
 
     // user's domain type. It could be one of the four: OSS_HOST_TYPE_NORMAL, OSS_HOST_TYPE_IP, OSS_HOST_TYPE_SPECIAL, OSS_HOST_TYPE_CNAME
     private $hostType = self::OSS_HOST_TYPE_NORMAL;
+    private $requestUrl;
     private $requestProxy = null;
-    /**
-     * @var CredentialsProvider
-     */
-    private $provider;
+    private $accessKeyId;
+    private $accessKeySecret;
     private $hostname;
+    private $securityToken;
     private $enableStsInUrl = false;
     private $timeout = 0;
     private $connectTimeout = 0;

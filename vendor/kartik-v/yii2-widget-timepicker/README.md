@@ -1,17 +1,5 @@
-<h1 align="center">
-    <a href="http://demos.krajee.com" title="Krajee Demos" target="_blank">
-        <img src="http://kartik-v.github.io/bootstrap-fileinput-samples/samples/krajee-logo-b.png" alt="Krajee Logo"/>
-    </a>
-    <br>
-    yii2-widget-timepicker
-    <hr>
-    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DTP3NZQ6G2AYU"
-       title="Donate via Paypal" target="_blank"><img height="60" src="https://kartik-v.github.io/bootstrap-fileinput-samples/samples/donate.png" alt="Donate"/></a>
-    &nbsp; &nbsp; &nbsp;
-    <a href="https://www.buymeacoffee.com/kartikv" title="Buy me a coffee" ><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="60" alt="kartikv" /></a>
-</h1>
-
-<div align="center">
+yii2-widget-timepicker
+======================
 
 [![Stable Version](https://poser.pugx.org/kartik-v/yii2-widget-timepicker/v/stable)](https://packagist.org/packages/kartik-v/yii2-widget-timepicker)
 [![Untable Version](https://poser.pugx.org/kartik-v/yii2-widget-timepicker/v/unstable)](https://packagist.org/packages/kartik-v/yii2-widget-timepicker)
@@ -19,8 +7,6 @@
 [![Total Downloads](https://poser.pugx.org/kartik-v/yii2-widget-timepicker/downloads)](https://packagist.org/packages/kartik-v/yii2-widget-timepicker)
 [![Monthly Downloads](https://poser.pugx.org/kartik-v/yii2-widget-timepicker/d/monthly)](https://packagist.org/packages/kartik-v/yii2-widget-timepicker)
 [![Daily Downloads](https://poser.pugx.org/kartik-v/yii2-widget-timepicker/d/daily)](https://packagist.org/packages/kartik-v/yii2-widget-timepicker)
-
-</div>
 
 The TimePicker widget  allows you to easily select a time for a text input using your mouse or keyboards arrow keys. The widget is a wrapper enhancement of the <a href='https://github.com/rendom/bootstrap-3-timepicker' target='_blank'>TimePicker plugin</a> by rendom forked from  <a href='https://github.com/jdewit/bootstrap-timepicker' target='_blank'>jdewit's TimePicker</a>. This widget as used here has been specially enhanced for Yii framework 2.0 and Bootstrap 3. With release v1.0.4, the extension has been enhanced to support Bootstrap 4.x version.
 

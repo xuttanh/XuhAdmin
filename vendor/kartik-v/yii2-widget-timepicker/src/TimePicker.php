@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @copyright Copyright &copy; Kartik Visweswaran, Krajee.com, 2014 - 2021
+ * @copyright Copyright &copy; Kartik Visweswaran, Krajee.com, 2014 - 2018
  * @package yii2-widgets
  * @subpackage yii2-widget-timepicker
- * @version 1.0.5
+ * @version 1.0.4
  */
 
 namespace kartik\time;
@@ -43,7 +43,7 @@ class TimePicker extends InputWidget
      * - `buttonOptions`: _array_, HTML attributes if the addon is to be displayed like a button. If [[asButton]] is
      *   `true`, this will default to :
      *    - `['class' => 'btn btn-default']` for [[bsVersion]] = '3.x' or .
-     *    - `['class' => 'btn btn-secondary']` for [[bsVersion]] = '4.x' and '5.x'
+     *    - `['class' => 'btn btn-secondary']` for [[bsVersion]] = '4.x'
      */
     public $addonOptions = [];
 
@@ -72,13 +72,13 @@ class TimePicker extends InputWidget
     /**
      * Initializes icon for time units up and down buttons
      * @param string $type whether 'up' or 'down'
-     * @throws InvalidConfigException|\Exception
+     * @throws InvalidConfigException
      */
     protected function initIcon($type)
     {
         $prop = $type . 'ArrowStyle';
         if (!isset($this->pluginOptions[$prop])) {
-            $prefix = !$this->isBs(3) ? 'fas fa-' : 'glyphicon glyphicon-';
+            $prefix = $this->isBs4() ? 'fas fa-' : 'glyphicon glyphicon-';
             $this->pluginOptions[$prop] = $prefix . 'chevron-' . $type;
         }
     }
@@ -87,24 +87,23 @@ class TimePicker extends InputWidget
      * Renders the input
      *
      * @return string
-     * @throws InvalidConfigException|\Exception
+     * @throws InvalidConfigException
      */
     protected function renderInput()
     {
-        $notBs3 = !$this->isBs(3);
-        $isBs5 = $this->isBs(5);
+        $isBs4 = $this->isBs4();
         if (!isset($this->addon)) {
-            $this->addon = $notBs3 ? '<i class="far fa-clock"></i>' : '<i class="glyphicon glyphicon-time"></i>';
+            $this->addon = $isBs4 ? '<i class="far fa-clock"></i>' : '<i class="glyphicon glyphicon-time"></i>';
         }
         Html::addCssClass($this->options, 'form-control');
         if (!empty($this->options['disabled'])) {
             Html::addCssClass($this->addonOptions, 'disabled-addon');
         }
         if (ArrayHelper::getValue($this->pluginOptions, 'template', true) === false) {
-            $css = $notBs3 ? 'bootstrap-timepicker4' : 'bootstrap-timepicker3';
+            $css = $isBs4 ? 'bootstrap-timepicker4' : 'bootstrap-timepicker3';
             Html::addCssClass($this->containerOptions, ['bootstrap-timepicker', $css]);
             if (isset($this->size)) {
-                Html::addCssClass($this->options, ($notBs3 ? 'form-control-' : 'input-') . $this->size);
+                Html::addCssClass($this->options, ($isBs4 ? 'form-control-' : 'input-') . $this->size);
                 Html::addCssClass($this->addonOptions, 'inline-addon inline-addon-' . $this->size);
             } else {
                 Html::addCssClass($this->addonOptions, 'inline-addon');
@@ -116,20 +115,19 @@ class TimePicker extends InputWidget
         $buttonOptions = ArrayHelper::remove($this->addonOptions, 'buttonOptions', []);
 
         if ($asButton) {
-            $css = $notBs3 ? 'input-group-append' : 'input-group-btn';
-            $tag = $notBs3 ? 'div' : 'span';
+            $css = $isBs4 ? 'input-group-append' : 'input-group-btn';
+            $tag = $isBs4 ? 'div' : 'span';
             Html::addCssClass($this->addonOptions, [$css, 'picker']);
             $buttonOptions['type'] = 'button';
             if (empty($buttonOptions['class'])) {
                 Html::addCssClass($buttonOptions, 'btn btn-default');
             }
-            $button = Html::button($this->addon, $buttonOptions);
-            $addon = $isBs5 ? $button : Html::tag($tag, $button, $this->addonOptions);
+            $addon = Html::tag($tag, Html::button($this->addon, $buttonOptions), $this->addonOptions);
         } else {
-            $css = $notBs3 ? 'input-group-text' : 'input-group-addon';
+            $css = $isBs4 ? 'input-group-text' : 'input-group-addon';
             Html::addCssClass($this->addonOptions, [$css, 'picker']);
             $addon = Html::tag('span', $this->addon, $this->addonOptions);
-            if ($notBs3 && !$isBs5) {
+            if ($isBs4) {
                 $addon = Html::tag('div', $addon, ['class' => 'input-group-append']);
             }
         }

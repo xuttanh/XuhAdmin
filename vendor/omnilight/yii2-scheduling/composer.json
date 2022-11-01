@@ -36,10 +36,5 @@
   },
   "scripts": {
     "test": "vendor/bin/phpunit"
-  },
-  "config": {
-    "allow-plugins": {
-      "yiisoft/yii2-composer": true
-    }
   }
 }

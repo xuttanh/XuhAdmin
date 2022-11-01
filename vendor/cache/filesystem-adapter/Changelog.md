@@ -1,39 +1,23 @@
 # Change Log
 
-The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release.
+The change log describes what is "Added", "Removed", "Changed" or "Fixed" between each release. 
 
 ## UNRELEASED
 
-## 1.2.0
-
-* Support for PHP 8.1
-* Drop support for PHP < 7.4
-* Allow psr/cache: ^1.0 || ^2.0
-
-## 1.1.0
-
-### Added
-
-* Support for PHP 8
-
-### Changed
-
-* Use `League\Flysystem\FilesystemInterface` instead of concrete `League\Flysystem\Filesystem` class
-
 ## 1.0.0
 
-* No changes since 0.4.0
+No changes since 0.4.0
 
 ## 0.4.0
 
 ### Added
 
-* Support for the new `TaggableCacheItemPoolInterface`.
+* Support for the new `TaggableCacheItemPoolInterface`. 
 * Support for PSR-16 SimpleCache
 
 ### Changed
 
-* The behavior of `CacheItem::getTags()` has changed. It will not return the tags stored in the cache storage.
+* The behavior of `CacheItem::getTags()` has changed. It will not return the tags stored in the cache storage. 
 
 ### Removed
 
@@ -45,13 +29,13 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ### Fixed
 
-* Race condition in `fetchObjectFromCache`.
+Race condition in `fetchObjectFromCache`.
 
 ## 0.3.2
 
 ### Changed
 
-* Using `Filesystem::update` instead of `Filesystem::delete` and `Filesystem::write`.
+Using `Filesystem::update` instead of `Filesystem::delete` and `Filesystem::write`.
 
 ## 0.3.1
 
@@ -61,4 +45,4 @@ The change log describes what is "Added", "Removed", "Changed" or "Fixed" betwee
 
 ## 0.3.0
 
-* No changelog before this version
+No changelog before this version

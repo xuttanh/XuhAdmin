@@ -17,9 +17,7 @@ $bucketManager = new \Qiniu\Storage\BucketManager($auth, $config);
 // 镜像资源更新
 // 参考文档：https://developer.qiniu.com/kodo/api/1293/prefetch
 
-list($ret, $err) = $bucketManager->prefetch($bucket, $key);
-if ($err != null) {
-    var_dump($err);
-} else {
-    var_dump($ret);
+$err = $bucketManager->prefetch($bucket, $key);
+if ($err) {
+    print_r($err);
 }

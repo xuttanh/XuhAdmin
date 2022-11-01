@@ -38,144 +38,105 @@ class BucketTest extends \PHPUnit_Framework_TestCase
     {
 
         list($list, $error) = $this->bucketManager->buckets();
-        $this->assertNull($error);
         $this->assertTrue(in_array($this->bucketName, $list));
+        $this->assertNull($error);
 
         list($list2, $error) = $this->dummyBucketManager->buckets();
         $this->assertEquals(401, $error->code());
+        $this->assertNull($list2);
         $this->assertNotNull($error->message());
         $this->assertNotNull($error->getResponse());
-        $this->assertNull($list2);
     }
 
     public function testListbuckets()
     {
         list($ret, $error) = $this->bucketManager->listbuckets('z0');
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testCreateBucket()
     {
         list($ret, $error) = $this->bucketManager->createBucket('phpsdk-ci-test');
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testDeleteBucket()
     {
         list($ret, $error) = $this->bucketManager->deleteBucket('phpsdk-ci-test');
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testDomains()
     {
         list($ret, $error) = $this->bucketManager->domains($this->bucketName);
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testBucketInfo()
     {
         list($ret, $error) = $this->bucketManager->bucketInfo($this->bucketName);
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testBucketInfos()
     {
         list($ret, $error) = $this->bucketManager->bucketInfos('z0');
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testList()
     {
         list($ret, $error) = $this->bucketManager->listFiles($this->bucketName, null, null, 10);
-        $this->assertNull($error);
         $this->assertNotNull($ret['items'][0]);
         $this->assertNotNull($ret['marker']);
+        $this->assertNull($error);
     }
 
     public function testListFilesv2()
     {
         list($ret, $error) = $this->bucketManager->listFilesv2($this->bucketName, null, null, 10);
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testBucketLifecycleRule()
     {
-        // delete
-        $this->bucketManager->deleteBucketLifecycleRule($this->bucketName, 'demo');
-
-        // add
-        list($ret, $error) = $this->bucketManager->bucketLifecycleRule(
-            $this->bucketName,
-            'demo',
-            'test',
-            80,
-            70,
-            72,
-            74
-        );
-        $this->assertNull($error);
+        list($ret, $error) = $this->bucketManager->bucketLifecycleRule($this->bucketName, 'demo', 'test', 80, 70);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
+    }
 
-        // get
+    public function testGetbucketLifecycleRule()
+    {
         list($ret, $error) = $this->bucketManager->getBucketLifecycleRules($this->bucketName);
-        $this->assertNull($error);
         $this->assertNotNull($ret);
-        $rule = null;
-        foreach ($ret as $r) {
-            if ($r["name"] === "demo") {
-                $rule = $r;
-                break;
-            }
-        }
-        $this->assertNotNull($rule);
-        $this->assertEquals("test", $rule["prefix"]);
-        $this->assertEquals(80, $rule["delete_after_days"]);
-        $this->assertEquals(70, $rule["to_line_after_days"]);
-        $this->assertEquals(72, $rule["to_archive_after_days"]);
-        $this->assertEquals(74, $rule["to_deep_archive_after_days"]);
+        $this->assertNull($error);
+    }
 
-        // update
+    public function testUpdatebucketLifecycleRule()
+    {
         list($ret, $error) = $this->bucketManager->updateBucketLifecycleRule(
             $this->bucketName,
             'demo',
             'testupdate',
-            90,
-            75,
             80,
-            85
+            70
         );
-        $this->assertNull($error);
         $this->assertNotNull($ret);
-
-        // get
-        list($ret, $error) = $this->bucketManager->getBucketLifecycleRules($this->bucketName);
         $this->assertNull($error);
-        $this->assertNotNull($ret);
-        $rule = null;
-        foreach ($ret as $r) {
-            if ($r["name"] === "demo") {
-                $rule = $r;
-                break;
-            }
-        }
-        $this->assertNotNull($rule);
-        $this->assertEquals("testupdate", $rule["prefix"]);
-        $this->assertEquals(90, $rule["delete_after_days"]);
-        $this->assertEquals(75, $rule["to_line_after_days"]);
-        $this->assertEquals(80, $rule["to_archive_after_days"]);
-        $this->assertEquals(85, $rule["to_deep_archive_after_days"]);
+    }
 
-        // delete
+    public function testDeleteBucketLifecycleRule()
+    {
         list($ret, $error) = $this->bucketManager->deleteBucketLifecycleRule($this->bucketName, 'demo');
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testPutBucketEvent()
@@ -188,8 +149,8 @@ class BucketTest extends \PHPUnit_Framework_TestCase
             array('copy'),
             $this->customCallbackURL
         );
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testUpdateBucketEvent()
@@ -202,47 +163,47 @@ class BucketTest extends \PHPUnit_Framework_TestCase
             array('copy'),
             $this->customCallbackURL
         );
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testGetBucketEvent()
     {
         list($ret, $error) = $this->bucketManager->getBucketEvents($this->bucketName);
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testDeleteBucketEvent()
     {
         list($ret, $error) = $this->bucketManager->deleteBucketEvent($this->bucketName, 'bucketevent');
-        $this->assertNull($error);
         $this->assertNotNull($ret);
+        $this->assertNull($error);
     }
 
     public function testStat()
     {
         list($stat, $error) = $this->bucketManager->stat($this->bucketName, $this->key);
-        $this->assertNull($error);
         $this->assertNotNull($stat);
+        $this->assertNull($error);
         $this->assertNotNull($stat['hash']);
 
         list($stat, $error) = $this->bucketManager->stat($this->bucketName, 'nofile');
+        $this->assertNull($stat);
         $this->assertEquals(612, $error->code());
         $this->assertNotNull($error->message());
-        $this->assertNull($stat);
 
         list($stat, $error) = $this->bucketManager->stat('nobucket', 'nofile');
+        $this->assertNull($stat);
         $this->assertEquals(631, $error->code());
         $this->assertNotNull($error->message());
-        $this->assertNull($stat);
     }
 
     public function testDelete()
     {
         list($ret, $error) = $this->bucketManager->delete($this->bucketName, 'del');
-        $this->assertNotNull($error);
         $this->assertNull($ret);
+        $this->assertNotNull($error);
     }
 
 
@@ -310,16 +271,6 @@ class BucketTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($error);
     }
 
-    public function testPrefetchFailed()
-    {
-        list($ret, $error) = $this->bucketManager->prefetch(
-            'fakebucket',
-            'php-sdk.html'
-        );
-        $this->assertNotNull($error);
-        $this->assertNull($ret);
-    }
-
     public function testFetch()
     {
         list($ret, $error) = $this->bucketManager->fetch(
@@ -327,33 +278,23 @@ class BucketTest extends \PHPUnit_Framework_TestCase
             $this->bucketName,
             'fetch.html'
         );
-        $this->assertNull($error);
         $this->assertArrayHasKey('hash', $ret);
+        $this->assertNull($error);
 
         list($ret, $error) = $this->bucketManager->fetch(
             'http://developer.qiniu.com/docs/v6/sdk/php-sdk.html',
             $this->bucketName,
             ''
         );
-        $this->assertNull($error);
         $this->assertArrayHasKey('key', $ret);
+        $this->assertNull($error);
 
         list($ret, $error) = $this->bucketManager->fetch(
             'http://developer.qiniu.com/docs/v6/sdk/php-sdk.html',
             $this->bucketName
         );
-        $this->assertNull($error);
         $this->assertArrayHasKey('key', $ret);
-    }
-
-    public function testFetchFailed()
-    {
-        list($ret, $error) = $this->bucketManager->fetch(
-            'http://developer.qiniu.com/docs/v6/sdk/php-sdk.html',
-            'fakebucket'
-        );
-        $this->assertNotNull($error);
-        $this->assertNull($ret);
+        $this->assertNull($error);
     }
 
     public function testAsynchFetch()
@@ -364,8 +305,8 @@ class BucketTest extends \PHPUnit_Framework_TestCase
             null,
             'qiniu.png'
         );
-        $this->assertNull($error);
         $this->assertArrayHasKey('id', $ret);
+        $this->assertNull($error);
 
         list($ret, $error) = $this->bucketManager->asynchFetch(
             'http://devtools.qiniu.com/qiniu.png',
@@ -373,25 +314,15 @@ class BucketTest extends \PHPUnit_Framework_TestCase
             null,
             ''
         );
-        $this->assertNull($error);
         $this->assertArrayHasKey('id', $ret);
+        $this->assertNull($error);
 
         list($ret, $error) = $this->bucketManager->asynchFetch(
             'http://devtools.qiniu.com/qiniu.png',
             $this->bucketName
         );
-        $this->assertNull($error);
         $this->assertArrayHasKey('id', $ret);
-    }
-
-    public function testAsynchFetchFailed()
-    {
-        list($ret, $error) = $this->bucketManager->asynchFetch(
-            'http://devtools.qiniu.com/qiniu.png',
-            'fakebucket'
-        );
-        $this->assertNotNull($error);
-        $this->assertNull($ret);
+        $this->assertNull($error);
     }
 
 
@@ -447,24 +378,6 @@ class BucketTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(200, $ret[0]['code']);
     }
 
-    public function testBatchChangeTypeAndBatchRestoreAr()
-    {
-        $key = 'toChangeTypeThenRestore' . rand();
-        $this->bucketManager->copy($this->bucketName, $this->key, $this->bucketName, $key);
-
-        $ops = BucketManager::buildBatchChangeType($this->bucketName, array($key => 2)); // 2 Archive
-        list($ret, $error) = $this->bucketManager->batch($ops);
-        $this->assertNull($error);
-        $this->assertEquals(200, $ret[0]['code']);
-
-        $ops = BucketManager::buildBatchRestoreAr($this->bucketName, array($key => 1)); // 1 day
-        list($ret, $error) = $this->bucketManager->batch($ops);
-        $this->assertNull($error);
-        $this->assertEquals(200, $ret[0]['code']);
-
-        $this->bucketManager->delete($this->bucketName, $key);
-    }
-
     public function testDeleteAfterDays()
     {
         $key = rand();
@@ -474,90 +387,6 @@ class BucketTest extends \PHPUnit_Framework_TestCase
         $this->bucketManager->copy($this->bucketName, $this->key, $this->bucketName, $key);
         list($ret, $error) = $this->bucketManager->deleteAfterDays($this->bucketName, $key, 1);
         $this->assertEquals(null, $ret);
-    }
-
-    public function testSetObjectLifecycle()
-    {
-        $key = 'setObjectLifeCycle' . rand();
-        $this->bucketManager->delete($this->bucketName, $key);
-
-        $this->bucketManager->copy(
-            $this->bucketName,
-            $this->key,
-            $this->bucketName,
-            $key
-        );
-        list($ret, $err) = $this->bucketManager->setObjectLifecycle(
-            $this->bucketName,
-            $key,
-            10,
-            20,
-            30,
-            40
-        );
-        $this->assertNull($err);
-
-        $this->bucketManager->delete($this->bucketName, $key);
-    }
-
-    public function testSetObjectLifecycleWithCond()
-    {
-        $key = 'setObjectLifeCycleWithCond' . rand();
-        $this->bucketManager->delete($this->bucketName, $key);
-
-        $this->bucketManager->copy(
-            $this->bucketName,
-            $this->key,
-            $this->bucketName,
-            $key
-        );
-
-        list($ret, $err) = $this->bucketManager->stat($this->bucketName, $key);
-        $this->assertNull($err);
-        $key_hash = $ret['hash'];
-        $key_fsize = $ret['fsize'];
-
-        list($ret, $err) = $this->bucketManager->setObjectLifecycleWithCond(
-            $this->bucketName,
-            $key,
-            array(
-                'hash' => $key_hash,
-                'fsize' => $key_fsize
-            ),
-            10,
-            20,
-            30,
-            40
-        );
-        $this->assertNull($err);
-
-        $this->bucketManager->delete($this->bucketName, $key);
-    }
-
-    public function testBatchSetObjectLifecycle()
-    {
-        $key = 'batchSetObjectLifeCycle' . rand();
-        $this->bucketManager->delete($this->bucketName, $key);
-
-        $this->bucketManager->copy(
-            $this->bucketName,
-            $this->key,
-            $this->bucketName,
-            $key
-        );
-        $ops = BucketManager::buildBatchSetObjectLifecycle(
-            $this->bucketName,
-            array($key),
-            10,
-            20,
-            30,
-            40
-        );
-        list($ret, $err) = $this->bucketManager->batch($ops);
-        $this->assertNull($err);
-        $this->assertEquals(200, $ret[0]['code']);
-
-        $this->bucketManager->delete($this->bucketName, $key);
     }
 
     public function testGetCorsRules()
@@ -609,66 +438,6 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 
         list($ret, $err) = $this->bucketManager->changeType($this->bucketName, $this->key, 1);
         $this->assertNull($err);
-    }
-
-    public function testArchiveRestoreAr()
-    {
-        $key = 'archiveToRestore' . rand();
-        $this->bucketManager->delete($this->bucketName, $key);
-
-        $this->bucketManager->copy(
-            $this->bucketName,
-            $this->key,
-            $this->bucketName,
-            $key
-        );
-        $this->bucketManager->changeType($this->bucketName, $key, 2);
-
-        list(, $err) = $this->bucketManager->restoreAr($this->bucketName, $key, 2);
-        $this->assertNull($err);
-        list($ret, $err) = $this->bucketManager->stat($this->bucketName, $key);
-        $this->assertNull($err);
-
-        $this->assertEquals(2, $ret["type"]);
-
-        // restoreStatus
-        // null means frozen;
-        // 1 means be unfreezing;
-        // 2 means be unfrozen;
-        $this->assertNotNull($ret["restoreStatus"]);
-        $this->assertContains($ret["restoreStatus"], array(1, 2));
-
-        $this->bucketManager->delete($this->bucketName, $key);
-    }
-
-    public function testDeepArchiveRestoreAr()
-    {
-        $key = 'deepArchiveToRestore' . rand();
-        $this->bucketManager->delete($this->bucketName, $key);
-
-        $this->bucketManager->copy(
-            $this->bucketName,
-            $this->key,
-            $this->bucketName,
-            $key
-        );
-        $this->bucketManager->changeType($this->bucketName, $key, 3);
-
-        list(, $err) = $this->bucketManager->restoreAr($this->bucketName, $key, 1);
-        $this->assertNull($err);
-        list($ret, $err) = $this->bucketManager->stat($this->bucketName, $key);
-        $this->assertNull($err);
-
-        $this->assertEquals(3, $ret["type"]);
-
-        // restoreStatus
-        // null means frozen;
-        // 1 means be unfreezing;
-        // 2 means be unfrozen;
-        $this->assertNotNull($ret["restoreStatus"]);
-        $this->assertContains($ret["restoreStatus"], array(1, 2));
-
-        $this->bucketManager->delete($this->bucketName, $key);
     }
 
     public function testChangeStatus()

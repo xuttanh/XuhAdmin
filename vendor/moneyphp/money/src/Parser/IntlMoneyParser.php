@@ -26,6 +26,10 @@ final class IntlMoneyParser implements MoneyParser
      */
     private $currencies;
 
+    /**
+     * @param \NumberFormatter $formatter
+     * @param Currencies       $currencies
+     */
     public function __construct(\NumberFormatter $formatter, Currencies $currencies)
     {
         $this->formatter = $formatter;
@@ -45,7 +49,9 @@ final class IntlMoneyParser implements MoneyParser
         $decimal = $this->formatter->parseCurrency($money, $currency);
 
         if (false === $decimal) {
-            throw new ParserException('Cannot parse '.$money.' to Money. '.$this->formatter->getErrorMessage());
+            throw new ParserException(
+                'Cannot parse '.$money.' to Money. '.$this->formatter->getErrorMessage()
+            );
         }
 
         if (null !== $forceCurrency) {

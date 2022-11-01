@@ -96,11 +96,11 @@ class Message implements MessageInterface
     }
 
     /**
-     * @param $type
+     * @param string $type
      *
      * @return $this
      */
-    public function setType($type)
+    public function setType(string $type)
     {
         $this->type = $type;
 

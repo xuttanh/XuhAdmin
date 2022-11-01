@@ -24,6 +24,10 @@ final class CachedCurrencies implements Currencies
      */
     private $pool;
 
+    /**
+     * @param Currencies             $currencies
+     * @param CacheItemPoolInterface $pool
+     */
     public function __construct(Currencies $currencies, CacheItemPoolInterface $pool)
     {
         $this->currencies = $currencies;

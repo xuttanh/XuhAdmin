@@ -21,9 +21,7 @@ $status = 1;// 启用：0，禁用：1
 
 $key = "qiniu.jpg";
 
-list($ret, $err) = $bucketManager->changeStatus($bucket, $key, $status);
-if ($err != null) {
-    var_dump($err);
-} else {
-    var_dump($ret);
+$err = $bucketManager->changeStatus($bucket, $key, $status);
+if ($err) {
+    print_r($err);
 }

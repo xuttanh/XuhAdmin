@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'adminEmail' => 'petan@xuttanh.com',
-    'adminAcronym' => 'xuttanh',
-    'adminTitle' => 'Pet AN',
+    'adminEmail' => 'admin@example.com',
+    'adminAcronym' => 'RF',
+    'adminTitle' => 'RageFrame',
     'adminDefaultHomePage' => ['main/system'], // 默认主页
 
     /** ------ 总管理员配置 ------ **/
@@ -16,10 +16,10 @@ return [
     'user.log.except.code' => [404], // 不记录的code
 
     /** ------ 开发者信息 ------ **/
-    'exploitDeveloper' => 'xuhh',
-    'exploitFullName' => '文章后台管理系统',
-    'exploitOfficialWebsite' => '<a href="http://www.petan.com" target="_blank">www.petan.com</a>',
-    'exploitGitHub' => '<a href="https://github.com/xuttanh" target="_blank">https://github.com/xuttanh</a>',
+    'exploitDeveloper' => '简言',
+    'exploitFullName' => 'RageFrame应用开发引擎',
+    'exploitOfficialWebsite' => '<a href="http://www.rageframe.com" target="_blank">www.rageframe.com</a>',
+    'exploitGitHub' => '<a href="https://github.com/jianyan74/rageframe2" target="_blank">https://github.com/jianyan74/rageframe2</a>',
 
     /**
      * 不需要验证的路由全称

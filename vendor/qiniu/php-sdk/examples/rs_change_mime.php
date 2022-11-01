@@ -21,9 +21,7 @@ $bucketManager = new BucketManager($auth, $config);
 $key = 'qiniu.mp4';
 $newMime = 'video/x-mp4';
 
-list($ret, $err) = $bucketManager->changeMime($bucket, $key, $newMime);
-if ($err != null) {
-    var_dump($err);
-} else {
-    var_dump($ret);
+$err = $bucketManager->changeMime($bucket, $key, $newMime);
+if ($err) {
+    print_r($err);
 }

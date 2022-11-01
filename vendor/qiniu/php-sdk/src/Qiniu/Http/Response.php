@@ -8,21 +8,7 @@ namespace Qiniu\Http;
 final class Response
 {
     public $statusCode;
-    /**
-     * deprecated because of field names case-sensitive.
-     * use $normalizedHeaders instead which field names are case-insensitive.
-     * but be careful not to use $normalizedHeaders with `array_*` functions,
-     * such as `array_key_exists`, `array_keys`, `array_values`.
-     *
-     * use `isset` instead of `array_key_exists`,
-     * and should never use `array_key_exists` at http header.
-     *
-     * use `foreach` instead of `array_keys`, `array_values`.
-     *
-     * @deprecated
-     */
     public $headers;
-    public $normalizedHeaders;
     public $body;
     public $error;
     private $jsonData;
@@ -101,23 +87,13 @@ final class Response
     {
         $this->statusCode = $code;
         $this->duration = $duration;
-        $this->headers = array();
+        $this->headers = $headers;
         $this->body = $body;
         $this->error = $error;
         $this->jsonData = null;
-
         if ($error !== null) {
             return;
         }
-
-        foreach ($headers as $k => $vs) {
-            if (is_array($vs)) {
-                $this->headers[$k] = $vs[count($vs) - 1];
-            } else {
-                $this->headers[$k] = $vs;
-            }
-        }
-        $this->normalizedHeaders = new Header($headers);
 
         if ($body === null) {
             if ($code >= 400) {
@@ -125,7 +101,7 @@ final class Response
             }
             return;
         }
-        if (self::isJson($this->normalizedHeaders)) {
+        if (self::isJson($headers)) {
             try {
                 $jsonData = self::bodyJson($body);
                 if ($code >= 400) {
@@ -152,19 +128,6 @@ final class Response
         return $this->jsonData;
     }
 
-    public function headers($normalized = false)
-    {
-        if ($normalized) {
-            return $this->normalizedHeaders;
-        }
-        return $this->headers;
-    }
-
-    public function body()
-    {
-        return $this->body;
-    }
-
     private static function bodyJson($body)
     {
         return \Qiniu\json_decode((string) $body, true, 512);
@@ -172,24 +135,24 @@ final class Response
 
     public function xVia()
     {
-        $via = $this->normalizedHeaders['X-Via'];
+        $via = $this->headers['X-Via'];
         if ($via === null) {
-            $via = $this->normalizedHeaders['X-Px'];
+            $via = $this->headers['X-Px'];
         }
         if ($via === null) {
-            $via = $this->normalizedHeaders['Fw-Via'];
+            $via = $this->headers['Fw-Via'];
         }
         return $via;
     }
 
     public function xLog()
     {
-        return $this->normalizedHeaders['X-Log'];
+        return $this->headers['X-Log'];
     }
 
     public function xReqId()
     {
-        return $this->normalizedHeaders['X-Reqid'];
+        return $this->headers['X-Reqid'];
     }
 
     public function ok()
@@ -207,6 +170,7 @@ final class Response
 
     private static function isJson($headers)
     {
-        return isset($headers['Content-Type']) && strpos($headers['Content-Type'], 'application/json') === 0;
+        return array_key_exists('content-type', $headers) || array_key_exists('Content-Type', $headers) &&
+        strpos($headers['Content-Type'], 'application/json') === 0;
     }
 }

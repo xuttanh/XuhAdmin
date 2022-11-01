@@ -11,17 +11,18 @@
         }
     ],
     "require": {
-        "php": ">=7.2.0 <9.0",
         "ext-json": "*",
         "ext-curl": "*",
-        "yiisoft/yii2": "^2.0.0"
+        "yiisoft/yii2": "^2.0.0",
+        "yidas/yii2-bower-asset": "^2.0.13.1"
     },
     "require-dev": {
+        "codeception/base": "^2.2.3",
+        "codeception/verify": "~0.3.1",
+        "codeception/specify": "~0.4.3",
         "guzzlehttp/guzzle": ">=4.1.4 <7.0",
-        "mcustiel/phiremock": "^2.1",
-        "mcustiel/phiremock-codeception-extension": "^2.1",
-        "mcustiel/phiremock-codeception-module": "^1.1.2",
-        "codeception/module-asserts": "^1.3"
+        "mcustiel/phiremock-codeception-extension": "1.2.4",
+        "codeclimate/php-test-reporter": "dev-master"
     },
     "autoload": {
         "psr-4": {
@@ -32,11 +33,5 @@
         "exclude": [
             "/tests"
         ]
-    },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://asset-packagist.org"
-        }
-    ]
+    }
 }

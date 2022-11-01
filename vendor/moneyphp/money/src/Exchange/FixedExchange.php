@@ -19,6 +19,9 @@ final class FixedExchange implements Exchange
      */
     private $list;
 
+    /**
+     * @param array $list
+     */
     public function __construct(array $list)
     {
         $this->list = $list;

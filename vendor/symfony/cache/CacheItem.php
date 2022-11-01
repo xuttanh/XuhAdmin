@@ -43,8 +43,6 @@ final class CacheItem implements ItemInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @return mixed
      */
     public function get()
     {
@@ -163,7 +161,7 @@ final class CacheItem implements ItemInterface
     /**
      * Validates a cache key according to PSR-6.
      *
-     * @param mixed $key The key to validate
+     * @param string $key The key to validate
      *
      * @throws InvalidArgumentException When $key is not valid
      */
@@ -194,7 +192,7 @@ final class CacheItem implements ItemInterface
         } else {
             $replace = [];
             foreach ($context as $k => $v) {
-                if (\is_scalar($v)) {
+                if (is_scalar($v)) {
                     $replace['{'.$k.'}'] = $v;
                 }
             }

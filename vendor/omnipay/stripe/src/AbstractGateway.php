@@ -107,7 +107,6 @@ abstract class AbstractGateway extends AbstractOmnipayGateway
     {
         return array(
             'apiKey' => '',
-            'stripeVersion' => null
         );
     }
 
@@ -149,24 +148,6 @@ abstract class AbstractGateway extends AbstractOmnipayGateway
     public function setApiKey($value)
     {
         return $this->setParameter('apiKey', $value);
-    }
-
-    /**
-     * @return string
-     */
-    public function getStripeVersion()
-    {
-        return $this->getParameter('stripeVersion');
-    }
-
-    /**
-     * @param string $value
-     *
-     * @return Gateway
-     */
-    public function setStripeVersion($value)
-    {
-        return $this->setParameter('stripeVersion', $value);
     }
 
     /**
@@ -280,21 +261,6 @@ abstract class AbstractGateway extends AbstractOmnipayGateway
     public function fetchBalanceTransaction(array $parameters = array())
     {
         return $this->createRequest('\Omnipay\Stripe\Message\FetchBalanceTransactionRequest', $parameters);
-    }
-
-    //
-    // Application Fees
-    // @link https://stripe.com/docs/api#application_fees
-    //
-
-    /**
-     * @param array $parameters
-     *
-     * @return \Omnipay\Stripe\Message\FetchApplicationFeeRequest
-     */
-    public function fetchApplicationFee(array $parameters = array())
-    {
-        return $this->createRequest('\Omnipay\Stripe\Message\FetchApplicationFeeRequest', $parameters);
     }
 
     //

@@ -13,8 +13,6 @@ class CallbackFilter extends \php_user_filter
     private $closed = true;
     private $supportsClose = false;
 
-    /** @return bool */
-    #[\ReturnTypeWillChange]
     public function onCreate()
     {
         $this->closed = false;
@@ -31,8 +29,6 @@ class CallbackFilter extends \php_user_filter
         return true;
     }
 
-    /** @return void */
-    #[\ReturnTypeWillChange]
     public function onClose()
     {
         $this->closed = true;
@@ -53,8 +49,6 @@ class CallbackFilter extends \php_user_filter
         $this->callback = null;
     }
 
-    /** @return int */
-    #[\ReturnTypeWillChange]
     public function filter($in, $out, &$consumed, $closing)
     {
         // concatenate whole buffer from input brigade

@@ -4,79 +4,6 @@ namespace OSS\Tests;
 
 use OSS\Core\OssException;
 use OSS\OssClient;
-use OSS\Credentials\Credentials;
-use OSS\Credentials\CredentialsProvider;
-use OSS\Credentials\StaticCredentialsProvider;
-
-class TestEmptyIdCredentials extends Credentials
-{
-    public function __construct()
-    {
-    }
-
-    public function getAccessKeyId()
-    {
-        return '';
-    }
-
-    public function getAccessKeySecret()
-    {
-        return 'secret';
-    }
-
-    public function getSecurityToken()
-    {
-        return null;
-    }
-}
-
-class TestEmptySecretCredentials extends Credentials
-{
-    public function __construct()
-    {
-    }
-
-    public function getAccessKeyId()
-    {
-        return 'id';
-    }
-
-    public function getAccessKeySecret()
-    {
-        return '';
-    }
-
-    public function getSecurityToken()
-    {
-        return null;
-    }
-}
-
-
-class TestCredentialsProvider implements CredentialsProvider
-{
-    private $credentials;
-    public function __construct($flag)
-    {
-        if ($flag == 2) {
-            $this->credentials =  new TestEmptyIdCredentials();
-        }
-        else if ($flag == 1) {
-            $this->credentials =  new TestEmptySecretCredentials();
-        }
-        else {
-            $this->credentials = null;
-        }
-    }
-
-    /**
-     * @return Credentials
-     */
-    public function getCredentials()
-    {
-        return $this->credentials;
-    }
-}
 
 
 class OssClientTest extends TestOssClientBase
@@ -184,7 +111,7 @@ class OssClientTest extends TestOssClientBase
             $ossClient->listBuckets();
             $this->assertFalse(true);
         } catch (OssException $e) {
-            $this->assertFalse(false);
+
         }
     }
 
@@ -196,7 +123,6 @@ class OssClientTest extends TestOssClientBase
             $endpoint = ' ' . getenv('OSS_ENDPOINT') . '/ ';
             $ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint, false);
             $ossClient->listBuckets();
-            $this->assertTrue(true);
         } catch (OssException $e) {
             $this->assertFalse(true);
         }
@@ -270,7 +196,6 @@ class OssClientTest extends TestOssClientBase
         try {
             $object='test-dir';
             $ossClient->createObjectDir($bucket,$object);
-            $this->assertTrue(true);
         } catch (OssException $e) {
             $this->assertFalse(true);
         }
@@ -279,7 +204,6 @@ class OssClientTest extends TestOssClientBase
             $object='0';
             $ossClient->createObjectDir($bucket,$object);
             $ossClient->putObject($bucket,$object, '');
-            $this->assertTrue(true);
         } catch (OssException $e) {
             var_dump($e);
             $this->assertFalse(true);
@@ -295,7 +219,6 @@ class OssClientTest extends TestOssClientBase
             $bucket = getenv('OSS_BUCKET');
             $ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint, false);
             $ossClient->getBucketCors($bucket);
-            $this->assertTrue(true);
         } catch (OssException $e) {
             $this->assertFalse(true);
         }
@@ -310,7 +233,6 @@ class OssClientTest extends TestOssClientBase
             $bucket = $this->bucket;
             $ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint, false);
             $ossClient->getBucketCname($bucket);
-            $this->assertTrue(true);
         } catch (OssException $e) {
             $this->assertFalse(true);
         }
@@ -414,81 +336,6 @@ class OssClientTest extends TestOssClientBase
             $this->assertTrue(strpos($signedUrl, 'security-token=test-token') != false);
         } catch (OssException $e) {
             $this->assertFalse(true);
-        }
-    }
-
-    public function testEmptyCredentials()
-    {
-        // empty case, should throw exception
-        try {
-            $id = '';
-            $secret = 'accessKey_secret';
-            $provider = new StaticCredentialsProvider($id, $secret);
-            $config = array(
-                'provider' => $provider,
-                'endpoint'=>'http://oss-cn-hangzhou.aliyuncs.com'
-            );
-            $ossClient = new OssClient($config);
-            $this->assertFalse(true);
-        } catch (OssException $e) {
-            $this->assertEquals('access key id is empty', $e->getMessage());
-        }
-
-        // empty case, should throw exception
-        try {
-            $id = 'id';
-            $secret = '';
-            $provider = new StaticCredentialsProvider($id, $secret);
-            $config = array(
-                'provider' => $provider,
-                'endpoint'=>'http://oss-cn-hangzhou.aliyuncs.com'
-            );
-            $ossClient = new OssClient($config);
-            $this->assertFalse(true);
-        } catch (OssException $e) {
-            $this->assertEquals('access key secret is empty', $e->getMessage());
-        }
-
-        // empty case, should throw exception
-        try {
-            $provider = new TestCredentialsProvider(0);
-            $config = array(
-                'provider' => $provider,
-                'endpoint'=>'http://oss-cn-hangzhou.aliyuncs.com'
-            );
-            $ossClient = new OssClient($config);
-            $ossClient->getBucketAcl("bucket");
-            $this->assertFalse(true);
-        } catch (OssException $e) {
-            $this->assertEquals('credentials is empty.', $e->getMessage());
-        }
-
-        // empty case, should throw exception
-        try {
-            $provider = new TestCredentialsProvider(1);
-            $config = array(
-                'provider' => $provider,
-                'endpoint'=>'http://oss-cn-hangzhou.aliyuncs.com'
-            );
-            $ossClient = new OssClient($config);
-            $ossClient->getBucketAcl("bucket");
-            $this->assertFalse(true);
-        } catch (OssException $e) {
-            $this->assertEquals('access key secret is empty', $e->getMessage());
-        }
-
-        // empty case, should throw exception
-        try {
-            $provider = new TestCredentialsProvider(2);
-            $config = array(
-                'provider' => $provider,
-                'endpoint'=>'http://oss-cn-hangzhou.aliyuncs.com'
-            );
-            $ossClient = new OssClient($config);
-            $ossClient->getBucketAcl("bucket");
-            $this->assertFalse(true);
-        } catch (OssException $e) {
-            $this->assertEquals('access key id is empty', $e->getMessage());
         }
     }
 }

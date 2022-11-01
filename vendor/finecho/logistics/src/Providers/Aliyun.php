@@ -39,7 +39,7 @@ class Aliyun extends AbstractProvider implements AliyunConfigurationConstant
     public function query($no, $company = null)
     {
         $params = \array_filter([
-            'number' => $no,
+            'no' => $no,
             'company' => $company,
         ]);
 

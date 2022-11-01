@@ -18,10 +18,9 @@ class CreatePlanRequestTest extends TestCase
         $this->request->setAmount('19.00');
         $this->request->setCurrency('usd');
         $this->request->setInterval('month');
-        $this->request->setNickname('Amazing Gold Plan');
-        $this->request->setProduct('prod_GWN5y0jpQeU9yj');
+        $this->request->setName('Amazing Gold Plan');
         $this->request->setIntervalCount(1);
-        $this->request->setActive(false);
+        $this->request->setStatementDescriptor('Omnipay Basic Plan');
         $this->request->setTrialPeriodDays(3);
     }
 
@@ -39,7 +38,6 @@ class CreatePlanRequestTest extends TestCase
         $this->assertFalse($response->isRedirect());
         $this->assertSame('basic', $response->getPlanId());
         $this->assertNotNull($response->getPlan());
-        $this->assertFalse($response->getPlan()['active']);
         $this->assertNull($response->getMessage());
     }
 

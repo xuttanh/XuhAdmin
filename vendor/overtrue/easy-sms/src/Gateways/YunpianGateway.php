@@ -43,38 +43,20 @@ class YunpianGateway extends Gateway
      */
     public function send(PhoneNumberInterface $to, MessageInterface $message, Config $config)
     {
-        $template = $message->getTemplate($this);
-        $function = 'single_send';
-        $option = [
+        $endpoint = $this->buildEndpoint('sms', 'sms', 'single_send');
+
+        $signature = $config->get('signature', '');
+
+        $content = $message->getContent($this);
+
+        $result = $this->request('post', $endpoint, [
             'form_params' => [
                 'apikey' => $config->get('api_key'),
-                'mobile' => $to->getUniversalNumber()
+                'mobile' => $to->getUniversalNumber(),
+                'text' => 0 === \stripos($content, '【') ? $content : $signature.$content,
             ],
             'exceptions' => false,
-        ];
-
-        if(!is_null($template)){
-            $function = 'tpl_single_send';
-            $data = [];
-
-            foreach ($message->getData($this) ?? [] as $key => $value) {
-                $data[] = urlencode('#'.$key.'#') . '=' . urlencode($value);
-            }
-
-            $option['form_params'] = array_merge($option['form_params'],[
-                'tpl_id' => $template,
-                'tpl_value' => implode('&', $data)
-            ]);
-        }else{
-            $content = $message->getContent($this);
-            $signature = $config->get('signature', '');
-            $option['form_params'] = array_merge($option['form_params'],[
-                'text' => 0 === \stripos($content, '【') ? $content : $signature.$content
-            ]);
-        }
-
-        $endpoint = $this->buildEndpoint('sms', 'sms', $function);
-        $result = $this->request('post', $endpoint, $option);
+        ]);
 
         if ($result['code']) {
             throw new GatewayErrorException($result['msg'], $result['code'], $result);

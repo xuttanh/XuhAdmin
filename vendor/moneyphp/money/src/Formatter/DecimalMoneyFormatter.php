@@ -18,6 +18,9 @@ final class DecimalMoneyFormatter implements MoneyFormatter
      */
     private $currencies;
 
+    /**
+     * @param Currencies $currencies
+     */
     public function __construct(Currencies $currencies)
     {
         $this->currencies = $currencies;

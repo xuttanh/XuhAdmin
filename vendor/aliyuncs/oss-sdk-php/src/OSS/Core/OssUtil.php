@@ -31,11 +31,7 @@ class OssUtil
         uksort($options, 'strnatcasecmp');
         foreach ($options as $key => $value) {
             if (is_string($key) && !is_array($value)) {
-                if (strlen($value) > 0) {
-                    $temp[] = rawurlencode($key) . '=' . rawurlencode($value);
-                } else {
-                    $temp[] = rawurlencode($key);
-                }
+                $temp[] = rawurlencode($key) . '=' . rawurlencode($value);
             }
         }
         return implode('&', $temp);
@@ -241,7 +237,7 @@ class OssUtil
      */
     public static function generateFile($filename, $size)
     {
-        if (file_exists($filename) && $size == sprintf('%u',filesize($filename))) {
+        if (file_exists($filename) && $size == filesize($filename)) {
             echo $filename . " already exists, no need to create again. ";
             return;
         }
@@ -288,7 +284,7 @@ BBB;
         if (($to_pos - $from_pos) > self::OSS_MAX_PART_SIZE) {
             return $content_md5;
         }
-        $filesize = sprintf('%u',filesize($filename));
+        $filesize = filesize($filename);
         if ($from_pos >= $filesize || $to_pos >= $filesize || $from_pos < 0 || $to_pos < 0) {
             return $content_md5;
         }
@@ -443,8 +439,7 @@ BBB;
             $sub_object = $xml->addChild('Object');
             $key = OssUtil::sReplace($object->getKey());
             $sub_object->addChild('Key', $key);
-            $versionId = $object->getVersionId();
-            if (!empty($versionId)) {
+            if (!empty($object->getVersionId())) {
                 $sub_object->addChild('VersionId', $object->getVersionId());
             }
         }

@@ -23,6 +23,10 @@ final class IntlLocalizedDecimalFormatter implements MoneyFormatter
      */
     private $currencies;
 
+    /**
+     * @param \NumberFormatter $formatter
+     * @param Currencies       $currencies
+     */
     public function __construct(\NumberFormatter $formatter, Currencies $currencies)
     {
         $this->formatter = $formatter;

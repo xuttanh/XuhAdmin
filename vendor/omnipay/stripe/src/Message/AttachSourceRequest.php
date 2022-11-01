@@ -7,7 +7,7 @@ namespace Omnipay\Stripe\Message;
 /**
  * Class CreateSourceRequest
  *
- * @link https://stripe.com/docs/api/sources/attach
+ * TODO : Add docblock
  */
 class AttachSourceRequest extends AbstractRequest
 {
